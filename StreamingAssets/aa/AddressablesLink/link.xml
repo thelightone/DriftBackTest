@@ -7,12 +7,18 @@
     <type fullname="BodyTilt" preserve="all" />
     <type fullname="CameraController" preserve="all" />
     <type fullname="CarController" preserve="all" />
+    <type fullname="CarDefinition" preserve="all" />
     <type fullname="CarSoundController" preserve="all" />
     <type fullname="CarStateUI" preserve="all" />
+    <type fullname="CurrencyPackCatalog" preserve="all" />
+    <type fullname="CurrencyPackDefinition" preserve="all" />
+    <type fullname="CurrencyPackItemView" preserve="all" />
     <type fullname="CustomButton" preserve="all" />
     <type fullname="FinishLineTrigger" preserve="all" />
     <type fullname="FXController" preserve="all" />
     <type fullname="GameController" preserve="all" />
+    <type fullname="GarageCarItemView" preserve="all" />
+    <type fullname="GarageCatalog" preserve="all" />
     <type fullname="MobileControlUI" preserve="all" />
     <type fullname="PauseMenuController" preserve="all" />
     <type fullname="PG_Physics.Wheel.PG_WheelCollider" preserve="all" />
