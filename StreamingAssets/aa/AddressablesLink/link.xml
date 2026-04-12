@@ -25,6 +25,7 @@
     <type fullname="PlayerCarSkinSelector" preserve="all" />
     <type fullname="RaceBootstrap" preserve="all" />
     <type fullname="RaceFlowManager" preserve="all" />
+    <type fullname="RaceResultSubmitter" preserve="all" />
     <type fullname="SceneLoader" preserve="all" />
     <type fullname="ShowHideMobileUI" preserve="all" />
     <type fullname="SpeedBasedCameraFov" preserve="all" />
