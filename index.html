@@ -38,44 +38,67 @@
             position: absolute;
             inset: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
-            background: #000;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.18)), url("TemplateData/loading-bg.png") center center / cover no-repeat;
             z-index: 20;
         }
 
         #loading-box {
-            width: min(320px, 80vw);
+            width: min(420px, 82vw);
+            margin-bottom: 54px;
             text-align: center;
-            color: white;
-        }
-
-        #loading-title {
-            font-size: 18px;
-            margin-bottom: 16px;
-            opacity: 0.9;
         }
 
         #loading-bar-bg {
             width: 100%;
             height: 12px;
-            background: rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.16);
             border-radius: 999px;
             overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10), 0 8px 24px rgba(0,0,0,0.28);
+            backdrop-filter: blur(2px);
         }
 
         #loading-bar-fill {
+            position: relative;
             width: 0%;
             height: 100%;
-            background: white;
             border-radius: 999px;
-            transition: width 0.15s linear;
+            background: linear-gradient(90deg, #ffffff 0%, #f2f2f2 45%, #ffffff 100%);
+            box-shadow: 0 0 12px rgba(255,255,255,0.45), 0 0 24px rgba(255,255,255,0.18);
+            transition: width 0.18s ease-out;
+            overflow: hidden;
+        }
+
+            #loading-bar-fill::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -35%;
+                width: 35%;
+                height: 100%;
+                background: linear-gradient( 90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100% );
+                animation: loadingShine 1.2s linear infinite;
+            }
+
+        @keyframes loadingShine {
+            0% {
+                left: -35%;
+            }
+
+            100% {
+                left: 135%;
+            }
         }
 
         #loading-percent {
-            margin-top: 10px;
-            font-size: 14px;
-            opacity: 0.85;
+            margin-top: 12px;
+            color: rgba(255,255,255,0.95);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.35);
         }
 
         #warning-banner {
@@ -85,7 +108,7 @@
             transform: translateX(-50%);
             z-index: 30;
             color: white;
-            background: rgba(255, 80, 80, 0.9);
+            background: rgba(255, 80, 80, 0.92);
             padding: 10px 14px;
             border-radius: 10px;
             max-width: 90vw;
@@ -101,7 +124,6 @@
 
         <div id="loading-overlay">
             <div id="loading-box">
-                <div id="loading-title">Loading game...</div>
                 <div id="loading-bar-bg">
                     <div id="loading-bar-fill"></div>
                 </div>
@@ -169,7 +191,7 @@
         const warningBanner = document.querySelector("#warning-banner");
 
         function showWarning(message) {
-            warningBanner.textContent = message;
+            warningBanner.textContent = message;А
             warningBanner.style.display = "block";
         }
 
@@ -183,6 +205,7 @@
                 loadingPercent.textContent = percent + "%";
             }).then((unityInstance) => {
                 console.log("=== UNITY LOADED ===");
+                window.unityInstance = unityInstance;
                 loadingOverlay.style.display = "none";
             }).catch((message) => {
                 console.error("UNITY LOAD ERROR:", message);
