@@ -1,140 +1,117 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover">
-    <title>Unity Web Player | DriftBackTest</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <title>Unity WebGL | Racing</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!-- Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        html, body {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
             background: #000;
+            overflow: hidden;
         }
 
         #unity-container {
-            position: fixed;
-            inset: 0;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
+            position: fixed;
+            left: 0;
+            top: 0;
         }
 
         #unity-canvas {
-            display: block;
             width: 100%;
             height: 100%;
             background: #000;
         }
+
+        #loading {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: Arial;
+            z-index: 10;
+        }
     </style>
 </head>
+
 <body>
     <div id="unity-container">
-        <canvas id="unity-canvas" tabindex="-1"></canvas>
-
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
-        </div>
-
-        <div id="unity-warning"></div>
-
-        <div id="unity-footer">
-            <div id="unity-logo-title-footer"></div>
-            <div id="unity-fullscreen-button"></div>
-            <div id="unity-build-title">DriftBackTest</div>
-        </div>
+        <canvas id="unity-canvas"></canvas>
+        <div id="loading">Loading...</div>
     </div>
 
     <script>
-        console.log("Page script started");
+        console.log("=== TELEGRAM INIT START ===");
 
-        window.addEventListener("load", function () {
-            if (window.Telegram && window.Telegram.WebApp) {
-                console.log("Telegram WebApp found");
-                console.log("Telegram initData:", window.Telegram.WebApp.initData);
+        const tg = window.Telegram.WebApp;
 
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-            } else {
-                console.log("Telegram WebApp not found");
-            }
-        });
+        tg.ready();
+        tg.expand();
 
-        var canvas = document.querySelector("#unity-canvas");
+        console.log("Telegram initData:", tg.initData);
+        console.log("Telegram user:", tg.initDataUnsafe?.user);
 
-        function unityShowBanner(msg, type) {
-            var warningBanner = document.querySelector("#unity-warning");
+        // Передаем данные в Unity глобально
+        window.TelegramWebAppData = {
+            initData: tg.initData || "",
+            user: tg.initDataUnsafe?.user || null,
+            platform: tg.platform,
+            version: tg.version
+        };
 
-            function updateBannerVisibility() {
-                warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-            }
+        console.log("=== TELEGRAM INIT END ===");
+    </script>
 
-            var div = document.createElement('div');
-            div.innerHTML = msg;
-            warningBanner.appendChild(div);
+    <script>
+        const buildUrl = "Build";
+        const loaderUrl = buildUrl + "/Builds.loader.js";
 
-            if (type == 'error') {
-                div.style = 'background: red; padding: 10px;';
-            } else {
-                if (type == 'warning') {
-                    div.style = 'background: yellow; padding: 10px;';
-                }
-                setTimeout(function () {
-                    warningBanner.removeChild(div);
-                    updateBannerVisibility();
-                }, 5000);
-            }
-
-            updateBannerVisibility();
-        }
-
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/Builds.loader.js";
-
-        var config = {
-            arguments: [],
+        const config = {
             dataUrl: buildUrl + "/Builds.data",
             frameworkUrl: buildUrl + "/Builds.framework.js",
             codeUrl: buildUrl + "/Builds.wasm",
             streamingAssetsUrl: "StreamingAssets",
+
             companyName: "DefaultCompany",
-            productName: "DriftBackTest",
-            productVersion: "0.1.0",
-            showBanner: unityShowBanner,
-            devicePixelRatio: 1
+            productName: "Racing",
+            productVersion: "1.0",
+
+            matchWebGLToCanvasSize: true,
+            devicePixelRatio: 1,
+
+            // важно для WebGL persistence
+            autoSyncPersistentDataPath: true
         };
 
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            document.querySelector("#unity-container").className = "unity-mobile";
-            canvas.className = "unity-mobile";
-        }
+        const canvas = document.querySelector("#unity-canvas");
+        const loading = document.querySelector("#loading");
 
-        document.querySelector("#unity-loading-bar").style.display = "block";
-
-        var script = document.createElement("script");
+        const script = document.createElement("script");
         script.src = loaderUrl;
 
         script.onload = () => {
             createUnityInstance(canvas, config, (progress) => {
-                document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
+                console.log("Loading progress:", progress);
             }).then((unityInstance) => {
-                window.unityInstance = unityInstance;
+                console.log("=== UNITY LOADED ===");
+                loading.style.display = "none";
 
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                    unityInstance.SetFullscreen(1);
-                };
+                // можно дернуть метод в Unity если надо
+                // unityInstance.SendMessage("GameObjectName", "OnTelegramReady");
             }).catch((message) => {
+                console.error("UNITY LOAD ERROR:", message);
                 alert(message);
             });
         };
