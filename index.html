@@ -4,44 +4,93 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL | Racing</title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    <!-- Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body {
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             background: #000;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
         #unity-container {
+            position: fixed;
+            inset: 0;
             width: 100vw;
             height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
+            background: #000;
         }
 
         #unity-canvas {
             width: 100%;
             height: 100%;
             background: #000;
+            display: block;
         }
 
-        #loading {
+        #loading-overlay {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #000;
+            z-index: 20;
+        }
+
+        #loading-box {
+            width: min(320px, 80vw);
+            text-align: center;
             color: white;
-            font-family: Arial;
-            z-index: 10;
+        }
+
+        #loading-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+
+        #loading-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        #loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 999px;
+            transition: width 0.15s linear;
+        }
+
+        #loading-percent {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        #warning-banner {
+            position: absolute;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            z-index: 30;
+            color: white;
+            background: rgba(255, 80, 80, 0.9);
+            padding: 10px 14px;
+            border-radius: 10px;
+            max-width: 90vw;
+            text-align: center;
+            display: none;
         }
     </style>
 </head>
@@ -49,27 +98,47 @@
 <body>
     <div id="unity-container">
         <canvas id="unity-canvas"></canvas>
-        <div id="loading">Loading...</div>
+
+        <div id="loading-overlay">
+            <div id="loading-box">
+                <div id="loading-title">Loading game...</div>
+                <div id="loading-bar-bg">
+                    <div id="loading-bar-fill"></div>
+                </div>
+                <div id="loading-percent">0%</div>
+            </div>
+        </div>
+
+        <div id="warning-banner"></div>
     </div>
 
     <script>
         console.log("=== TELEGRAM INIT START ===");
 
-        const tg = window.Telegram.WebApp;
+        const tg = window.Telegram?.WebApp;
 
-        tg.ready();
-        tg.expand();
+        if (tg) {
+            tg.ready();
+            tg.expand();
 
-        console.log("Telegram initData:", tg.initData);
-        console.log("Telegram user:", tg.initDataUnsafe?.user);
+            console.log("Telegram initData:", tg.initData);
+            console.log("Telegram user:", tg.initDataUnsafe?.user);
 
-        // Передаем данные в Unity глобально
-        window.TelegramWebAppData = {
-            initData: tg.initData || "",
-            user: tg.initDataUnsafe?.user || null,
-            platform: tg.platform,
-            version: tg.version
-        };
+            window.TelegramWebAppData = {
+                initData: tg.initData || "",
+                user: tg.initDataUnsafe?.user || null,
+                platform: tg.platform || "",
+                version: tg.version || ""
+            };
+        } else {
+            console.warn("Telegram WebApp SDK not found");
+            window.TelegramWebAppData = {
+                initData: "",
+                user: null,
+                platform: "",
+                version: ""
+            };
+        }
 
         console.log("=== TELEGRAM INIT END ===");
     </script>
@@ -90,30 +159,40 @@
 
             matchWebGLToCanvasSize: true,
             devicePixelRatio: 1,
-
-            // важно для WebGL persistence
             autoSyncPersistentDataPath: true
         };
 
         const canvas = document.querySelector("#unity-canvas");
-        const loading = document.querySelector("#loading");
+        const loadingOverlay = document.querySelector("#loading-overlay");
+        const loadingBarFill = document.querySelector("#loading-bar-fill");
+        const loadingPercent = document.querySelector("#loading-percent");
+        const warningBanner = document.querySelector("#warning-banner");
+
+        function showWarning(message) {
+            warningBanner.textContent = message;
+            warningBanner.style.display = "block";
+        }
 
         const script = document.createElement("script");
         script.src = loaderUrl;
 
         script.onload = () => {
             createUnityInstance(canvas, config, (progress) => {
-                console.log("Loading progress:", progress);
+                const percent = Math.round(progress * 100);
+                loadingBarFill.style.width = percent + "%";
+                loadingPercent.textContent = percent + "%";
             }).then((unityInstance) => {
                 console.log("=== UNITY LOADED ===");
-                loading.style.display = "none";
-
-                // можно дернуть метод в Unity если надо
-                // unityInstance.SendMessage("GameObjectName", "OnTelegramReady");
+                loadingOverlay.style.display = "none";
             }).catch((message) => {
                 console.error("UNITY LOAD ERROR:", message);
-                alert(message);
+                showWarning("Failed to load the game: " + message);
             });
+        };
+
+        script.onerror = () => {
+            console.error("Failed to load Unity loader script");
+            showWarning("Failed to load Unity loader script.");
         };
 
         document.body.appendChild(script);
