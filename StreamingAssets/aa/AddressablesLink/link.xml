@@ -24,6 +24,7 @@
     <type fullname="PauseMenuController" preserve="all" />
     <type fullname="PG_Physics.Wheel.PG_WheelCollider" preserve="all" />
     <type fullname="PlayerCarSkinSelector" preserve="all" />
+    <type fullname="PrefabPlanePlacer" preserve="all" />
     <type fullname="RaceBootstrap" preserve="all" />
     <type fullname="RaceFlowManager" preserve="all" />
     <type fullname="RaceResultSubmitter" preserve="all" />
