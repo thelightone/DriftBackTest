@@ -21,6 +21,7 @@
     <type fullname="GarageCatalog" preserve="all" />
     <type fullname="LoadingPanelView" preserve="all" />
     <type fullname="MobileControlUI" preserve="all" />
+    <type fullname="MusicSettings" preserve="all" />
     <type fullname="PauseMenuController" preserve="all" />
     <type fullname="PG_Physics.Wheel.PG_WheelCollider" preserve="all" />
     <type fullname="PlayerCarSkinSelector" preserve="all" />
